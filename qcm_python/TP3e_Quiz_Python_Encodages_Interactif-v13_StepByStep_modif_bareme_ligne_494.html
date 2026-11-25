@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Python : Encodages, Unicode, Octets et Fins de ligne</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Roboto, Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #F1F5F9;
+      color: #1E293B;
+      line-height: 1.55;
+      padding: 24px 16px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .container {
+      width: 100%;
+      max-width: 820px;
+      background: #FFFFFF;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+      overflow: hidden;
+      border: 1px solid #E2E8F0;
+    }
+    .header {
+      background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+      color: #FFFFFF;
+      padding: 22px 28px;
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .header h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .badges {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .badge {
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-score {
+      background: #FFFFFF;
+      color: #1E3A8A;
+      border-color: #FFFFFF;
+    }
+    .progress-wrapper {
+      margin-top: 16px;
+    }
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: #DBEAFE;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.22);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: #38BDF8;
+      border-radius: 999px;
+      transition: width 0.35s ease;
+    }
+    .content {
+      padding: 28px;
+    }
+    .hidden { display: none !important; }
+
+    /* Page d'accueil */
+    .intro-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1E3A8A;
+      margin-bottom: 10px;
+    }
+    .intro-desc {
+      color: #334155;
+      margin-bottom: 20px;
+      font-size: 0.98rem;
+    }
+    .rules-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .rule-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 0.94rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+    }
+    .rule-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .rule-green { background: #F0FDF4; border-color: #BBF7D0; color: #166534; }
+    .rule-green .rule-dot { background: #16A34A; }
+    .rule-yellow { background: #FFFBEB; border-color: #FDE68A; color: #92400E; }
+    .rule-yellow .rule-dot { background: #D97706; }
+    .rule-red { background: #FEF2F2; border-color: #FECACA; color: #991B1B; }
+    .rule-red .rule-dot { background: #DC2626; }
+
+    .tip-box {
+      background: #EFF6FF;
+      border-left: 4px solid #2563EB;
+      padding: 14px 16px;
+      border-radius: 8px;
+      color: #1E3A8A;
+      font-size: 0.92rem;
+      margin-bottom: 24px;
+    }
+
+    /* Boutons principaux */
+    .btn-primary {
+      background: #2563EB;
+      color: #FFFFFF;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary:hover:not(:disabled) { background: #1D4ED8; }
+    .btn-primary:active:not(:disabled) { transform: scale(0.99); }
+    .btn-primary:disabled {
+      background: #94A3B8;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    /* Zone Question */
+    .q-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .topic-tag {
+      background: #EFF6FF;
+      color: #1D4ED8;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid #BFDBFE;
+    }
+    .stake-pill {
+      font-size: 0.83rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: #F1F5F9;
+      color: #334155;
+      border: 1px solid #CBD5E1;
+    }
+    .stake-pill.stake-warn { background: #FFFBEB; color: #92400E; border-color: #FDE68A; }
+    .stake-pill.stake-ok { background: #F0FDF4; color: #166534; border-color: #BBF7D0; }
+    .stake-pill.stake-ko { background: #FEF2F2; color: #991B1B; border-color: #FECACA; }
+
+    .question-text {
+      font-size: 1.12rem;
+      font-weight: 600;
+      color: #0F172A;
+      margin-bottom: 18px;
+    }
+    code {
+      font-family: 'Fira Code', Consolas, Monaco, monospace;
+      background: #F1F5F9;
+      color: #0F172A;
+      padding: 2px 6px;
+      border-radius: 5px;
+      font-size: 0.92em;
+      border: 1px solid #E2E8F0;
+    }
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .option-card {
+      border: 2px solid #E2E8F0;
+      border-radius: 10px;
+      padding: 13px 16px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      background: #FFFFFF;
+      text-align: left;
+      width: 100%;
+    }
+    .option-card:hover {
+      border-color: #93C5FD;
+      background: #F8FAFC;
+    }
+    .option-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.98rem;
+      font-weight: 500;
+    }
+    .option-letter {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #F1F5F9;
+      color: #475569;
+      font-weight: 700;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .option-card.revealed-correct {
+      border-color: #16A34A;
+      background: #F0FDF4;
+    }
+    .option-card.revealed-correct .option-letter {
+      background: #16A34A;
+      color: #FFFFFF;
+    }
+    .option-card.revealed-wrong {
+      border-color: #DC2626;
+      background: #FEF2F2;
+    }
+    .option-card.revealed-wrong .option-letter {
+      background: #DC2626;
+      color: #FFFFFF;
+    }
+    .option-feedback {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(0,0,0,0.12);
+      font-size: 0.9rem;
+      color: #334155;
+      display: none;
+    }
+    .option-card.show-fb .option-feedback {
+      display: block;
+    }
+
+    /* Indice sous les propositions */
+    .hint-section {
+      margin-bottom: 22px;
+    }
+    .btn-hint {
+      background: #FEF9C3;
+      color: #854D0E;
+      border: 1px solid #FDE047;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-hint:hover { background: #FEF08A; }
+    .hint-box {
+      margin-top: 10px;
+      background: #FEFCE8;
+      border: 1px solid #FDE047;
+      border-left: 4px solid #EAB308;
+      padding: 12px 15px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      color: #713F12;
+    }
+    .nav-footer {
+      display: flex;
+      justify-content: flex-end;
+      border-top: 1px solid #E2E8F0;
+      padding-top: 18px;
+    }
+
+    /* Bilan final */
+    .summary-header {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+    .summary-scores {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin: 14px 0;
+      flex-wrap: wrap;
+    }
+    .score-card {
+      background: #F8FAFC;
+      border: 2px solid #CBD5E1;
+      border-radius: 12px;
+      padding: 14px 24px;
+      min-width: 150px;
+    }
+    .score-card .val {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #1E3A8A;
+    }
+    .score-card .lbl {
+      font-size: 0.85rem;
+      color: #64748B;
+      font-weight: 600;
+    }
+    .advice-box {
+      padding: 16px 18px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      border: 1px solid transparent;
+    }
+    .advice-green { background: #F0FDF4; border-color: #BBF7D0; color: #166534; }
+    .advice-yellow { background: #FFFBEB; border-color: #FDE68A; color: #92400E; }
+    .advice-red { background: #FEF2F2; border-color: #FECACA; color: #991B1B; }
+    .advice-box h3 { font-size: 1.02rem; margin-bottom: 6px; }
+    .advice-box ul { margin-left: 20px; margin-top: 6px; font-size: 0.92rem; }
+
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 22px;
+      font-size: 0.9rem;
+    }
+    .summary-table th {
+      background: #F1F5F9;
+      color: #334155;
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 2px solid #CBD5E1;
+    }
+    .summary-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #E2E8F0;
+    }
+    tr.row-green { background: #F0FDF4; color: #166534; }
+    tr.row-yellow { background: #FFFBEB; color: #92400E; }
+    tr.row-red { background: #FEF2F2; color: #991B1B; }
+    .summary-actions {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-top">
+        <h1>Quiz Python : Encodages, Unicode, Octets et Fins de ligne</h1>
+        <div class="badges">
+          <span class="badge" id="attempt-badge">Tentative n°1</span>
+          <span class="badge badge-score hidden" id="live-score-badge">Score : 0 / 10</span>
+        </div>
+      </div>
+      <div class="progress-wrapper hidden" id="progress-wrapper">
+        <div class="progress-labels">
+          <span id="progress-text">Question 1 / 10</span>
+          <span id="progress-pct">0 %</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ÉCRAN D'ACCUEIL -->
+    <div class="content" id="intro-screen">
+      <h2 class="intro-title" id="intro-title">Règles du quiz d'apprentissage</h2>
+      <p class="intro-desc">
+        Testez vos connaissances pas à pas. Chaque question s'affiche l'une après l'autre et vous pouvez explorer toutes les explications après votre premier clic.
+      </p>
+
+      <div class="rules-list">
+        <div class="rule-item rule-green">
+          <span class="rule-dot"></span>
+          <span><strong>1 point (Vert)</strong> : Bonne réponse dès le 1<sup>er</sup> essai sans ouvrir l'indice.</span>
+        </div>
+        <div class="rule-item rule-yellow">
+          <span class="rule-dot"></span>
+          <span id="rule-hint-text"><strong>0,5 point (Jaune)</strong> : Bonne réponse dès le 1<sup>er</sup> essai après ouverture de l'indice.</span>
+        </div>
+        <div class="rule-item rule-red">
+          <span class="rule-dot"></span>
+          <span><strong>0 point (Rouge)</strong> : Erreur au 1<sup>er</sup> essai sur la question.</span>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <strong>Astuce :</strong> Seul votre premier clic compte pour la note. Une fois la question validée, n'hésitez pas à cliquer sur les autres propositions pour lire pourquoi elles étaient justes ou fausses ! Vous pourrez retenter le quiz à la fin.
+      </div>
+
+      <button class="btn-primary" id="start-btn">Commencer le quiz →</button>
+    </div>
+
+    <!-- ÉCRAN QUESTION -->
+    <div class="content hidden" id="quiz-screen">
+      <div class="q-meta">
+        <span class="topic-tag" id="q-topic">Thème</span>
+        <span class="stake-pill" id="q-stake">En jeu : 1 pt</span>
+      </div>
+
+      <div class="question-text" id="q-text"></div>
+
+      <div class="options-list" id="options-container"></div>
+
+      <div class="hint-section">
+        <button class="btn-hint" id="hint-btn" type="button">💡 Afficher l'indice</button>
+        <div class="hint-box hidden" id="hint-box"></div>
+      </div>
+
+      <div class="nav-footer">
+        <button class="btn-primary" id="next-btn" disabled>Question suivante →</button>
+      </div>
+    </div>
+
+    <!-- ÉCRAN BILAN -->
+    <div class="content hidden" id="summary-screen">
+      <div class="summary-header">
+        <h2 class="intro-title" id="summary-title">Bilan de votre session (Tentative n°1)</h2>
+        <div class="summary-scores">
+          <div class="score-card">
+            <div class="val" id="score-10">0 / 10</div>
+            <div class="lbl">Note sur 10</div>
+          </div>
+          <div class="score-card">
+            <div class="val" id="score-20">0 / 20</div>
+            <div class="lbl">Note sur 20</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="advice-box" id="advice-box"></div>
+
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Notion évaluée</th>
+            <th>Résultat</th>
+            <th>Points</th>
+          </tr>
+        </thead>
+        <tbody id="summary-tbody"></tbody>
+      </table>
+
+      <div class="summary-actions">
+        <button class="btn-primary" id="retry-btn">↻ Retenter le quiz</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // CONFIGURATION DU BARÈME (Modifiez uniquement cette valeur selon votre gré)
+    // Valeur comprise entre 0 et 1 (ex: 1, 0.75, 0.5, 0.25, 0)
+    // =========================================================================
+    const POINTS_AVEC_INDICE = 0.8;
+
+    const QUESTIONS = [{"topic": "Unicode et ord() / chr()", "question": "Que renvoie l'expression Python <code>chr(ord('A') + 2)<\/code> ?", "options": [{"text": "<code>'C'<\/code>", "correct": true, "feedback": "Correct ! <code>ord('A')<\/code> vaut 65 ; 65 + 2 = 67 ; et <code>chr(67)<\/code> renvoie le caractère <code>'C'<\/code>."}, {"text": "<code>'A'<\/code>", "correct": false, "feedback": "Incorrect. <code>ord('A')<\/code> vaut 65, + 2 fait 67, ce qui correspond à un autre caractère que <code>'A'<\/code>."}, {"text": "<code>67<\/code>", "correct": false, "feedback": "Incorrect. <code>chr()<\/code> convertit bien le code entier en caractère, il ne renvoie pas l'entier brut <code>67<\/code>."}, {"text": "<code>'B'<\/code>", "correct": false, "feedback": "Incorrect. Cela correspondrait à <code>chr(ord('A') + 1)<\/code>."}], "hint": "<code>ord()<\/code> donne la valeur numérique (le point de code Unicode) d'un caractère, tandis que <code>chr()<\/code> fait l'opération inverse."}, {"topic": "Encodage ASCII", "question": "Combien de bits sont réellement utilisés pour coder un caractère dans la table <strong>ASCII standard<\/strong> ?", "options": [{"text": "7 bits", "correct": true, "feedback": "Correct ! La table ASCII historique utilise 7 bits (soit 128 caractères possibles, de 0 à 127)."}, {"text": "8 bits", "correct": false, "feedback": "Incorrect. 8 bits correspondent à un octet complet (utilisé par Latin-1 ou Windows-1252), pas à l'ASCII standard."}, {"text": "16 bits", "correct": false, "feedback": "Incorrect. 16 bits correspondent par exemple à l'encodage UTF-16."}, {"text": "4 bits", "correct": false, "feedback": "Incorrect. 4 bits permettent de représenter un chiffre hexadécimal (16 valeurs), ce qui est insuffisant pour l'alphabet complet."}], "hint": "Pensez au nombre total de caractères de la table ASCII d'origine : 2<sup>n<\/sup> = 128."}, {"topic": "Encodage UTF-8", "question": "En Python, combien d'octets renvoie l'expression <code>len('é'.encode('utf-8'))<\/code> ?", "options": [{"text": "2 octets", "correct": true, "feedback": "Correct ! Le caractère <code>'é'<\/code> (U+00E9) est codé sur 2 octets en UTF-8 (<code>0xC3 0xA9<\/code>)."}, {"text": "1 octet", "correct": false, "feedback": "Incorrect. En UTF-8, seuls les caractères ASCII de base (0–127) sont codés sur 1 octet."}, {"text": "3 octets", "correct": false, "feedback": "Incorrect. 3 octets en UTF-8 concernent des symboles ou idéogrammes plus éloignés (comme <code>€<\/code>), pas le <code>'é'<\/code>."}, {"text": "4 octets", "correct": false, "feedback": "Incorrect. 4 octets correspondent aux caractères Unicode supplémentaires (émojis, etc.)."}], "hint": "L'UTF-8 est un encodage à longueur variable : de 1 à 4 octets par caractère selon son point de code Unicode."}, {"topic": "Types str et bytes", "question": "Quel est le type de l'objet retourné par l'expression <code>b'ABC'<\/code> en Python 3 ?", "options": [{"text": "<code>bytes<\/code>", "correct": true, "feedback": "Correct ! Le préfixe <code>b<\/code> devant une chaîne indique un littéral d'octets (<code>bytes<\/code>)."}, {"text": "<code>str<\/code>", "correct": false, "feedback": "Incorrect. Une chaîne <code>str<\/code> s'écrit sans préfixe <code>b<\/code> (ex. <code>'ABC'<\/code>)."}, {"text": "<code>list<\/code>", "correct": false, "feedback": "Incorrect. Une liste s'écrit avec des crochets <code>[...]<\/code>, pas avec un préfixe <code>b<\/code>."}, {"text": "<code>bytearray<\/code>", "correct": false, "feedback": "Incorrect. <code>bytearray<\/code> est une structure mutable obtenue via <code>bytearray(...)<\/code>, non par le littéral <code>b'...'<\/code>."}], "hint": "Observez la lettre <code>b<\/code> placée juste avant les guillemets ouvrants."}, {"topic": "Conversion str ↔ bytes", "question": "Quelle méthode doit-on appeler sur un objet de type <code>bytes<\/code> pour le transformer en une chaîne de caractères <code>str<\/code> ?", "options": [{"text": "<code>.decode()<\/code>", "correct": true, "feedback": "Correct ! La méthode <code>.decode()<\/code> convertit une séquence de <code>bytes<\/code> en <code>str<\/code> selon l'encodage spécifié (ex. <code>b'...'.decode('utf-8')<\/code>)."}, {"text": "<code>.encode()<\/code>", "correct": false, "feedback": "Incorrect. <code>.encode()<\/code> s'utilise à l'inverse sur un objet <code>str<\/code> pour obtenir des <code>bytes<\/code>."}, {"text": "<code>str()<\/code> sans argument", "correct": false, "feedback": "Incorrect. <code>str(b'ABC')<\/code> renvoie la chaîne littérale <code>\"b'ABC'\"<\/code>, il ne décode pas les octets."}, {"text": "<code>.to_string()<\/code>", "correct": false, "feedback": "Incorrect. Cette méthode n'existe pas nativement sur les objets <code>bytes<\/code> en Python."}], "hint": "Mnémonique : <code>str<\/code> → <code>.encode()<\/code> → <code>bytes<\/code> ; et <code>bytes<\/code> → <code>.decode()<\/code> → <code>str<\/code>."}, {"topic": "Fins de ligne (CRLF / LF)", "question": "Quels caractères composent la fin de ligne standard sous les systèmes Microsoft Windows (<strong>CRLF<\/strong>) ?", "options": [{"text": "<code>\\r\\n<\/code>", "correct": true, "feedback": "Correct ! CRLF associe le <em>Carriage Return<\/em> (<code>\\r<\/code>, <code>0x0D<\/code>) suivi du <em>Line Feed<\/em> (<code>\\n<\/code>, <code>0x0A<\/code>)."}, {"text": "<code>\\n<\/code>", "correct": false, "feedback": "Incorrect. <code>\\n<\/code> seul (LF) est le standard des systèmes Unix / Linux / macOS modernes."}, {"text": "<code>\\r<\/code>", "correct": false, "feedback": "Incorrect. <code>\\r<\/code> seul était le standard historique des anciens Mac (Classic), pas de Windows."}, {"text": "<code>\\n\\r<\/code>", "correct": false, "feedback": "Incorrect. L'ordre standard est d'abord le retour chariot (CR) puis le saut de ligne (LF), soit <code>\\r\\n<\/code>."}], "hint": "CRLF signifie <em>Carriage Return<\/em> (CR) + <em>Line Feed<\/em> (LF)."}, {"topic": "Fonction repr()", "question": "Quelle est la particularité de la fonction <code>repr(s)<\/code> par rapport à <code>print(s)<\/code> pour une chaîne contenant un saut de ligne (<code>\\n<\/code>) ?", "options": [{"text": "Elle affiche les séquences d'échappement en clair (ex. <code>'\\n'<\/code> visible)", "correct": true, "feedback": "Correct ! <code>repr()<\/code> montre la représentation officielle de la chaîne en rendant visibles les caractères invisibles (<code>\\r<\/code>, <code>\\n<\/code>, <code>\\t<\/code>)."}, {"text": "Elle supprime tous les espaces et sauts de ligne", "correct": false, "feedback": "Incorrect. <code>repr()<\/code> ne modifie pas le contenu de la chaîne, elle en affiche la représentation brute."}, {"text": "Elle force systématiquement la conversion en hexadécimal", "correct": false, "feedback": "Incorrect. Seuls les caractères non imprimables sont échappés, les caractères ASCII normaux restent lisibles."}, {"text": "Elle produit exactement le même affichage que <code>print(s)<\/code>", "correct": false, "feedback": "Incorrect. <code>print(s)<\/code> exécute réellement le saut de ligne à l'écran, alors que <code>repr(s)<\/code> affiche <code>\\n<\/code>."}], "hint": "<code>repr<\/code> vient de <em>représentation<\/em> : c'est l'outil privilégié du développeur pour inspecter les caractères invisibles."}, {"topic": "Lecture de fichiers en mode binaire", "question": "Que produit la lecture d'un fichier ouvert avec <code>open('log.txt', 'rb')<\/code> en Python ?", "options": [{"text": "Des objets <code>bytes<\/code> sans conversion automatique des fins de ligne", "correct": true, "feedback": "Correct ! Le mode <code>'rb'<\/code> lit les octets bruts sous forme de <code>bytes<\/code> sans interprétation d'encodage ni transformation <code>CRLF<\/code> → <code>LF<\/code>."}, {"text": "Des objets <code>str<\/code> automatiquement décodés en UTF-8", "correct": false, "feedback": "Incorrect. Le décodage automatique en <code>str<\/code> n'a lieu qu'en mode texte (<code>'r'<\/code>)."}, {"text": "Une liste d'entiers Python compris entre 0 et 255", "correct": false, "feedback": "Incorrect. <code>read()<\/code> renvoie un objet <code>bytes<\/code> (même si on peut l'itérer octet par octet)."}, {"text": "Une erreur système si le fichier contient du texte brut", "correct": false, "feedback": "Incorrect. Le mode <code>'rb'<\/code> (<em>read binary<\/em>) permet de lire n'importe quel fichier, texte ou binaire."}], "hint": "La lettre <code>b<\/code> dans <code>'rb'<\/code> signifie <em>binary<\/em> : Python ne fait aucune supposition sur l'encodage ni les fins de ligne."}, {"topic": "Latin-1 vs Windows-1252", "question": "En quoi l'encodage <strong>Windows-1252 (cp1252)<\/strong> diffère-t-il principalement du <strong>Latin-1 (ISO-8859-1)<\/strong> ?", "options": [{"text": "Il utilise la plage <code>0x80<\/code>–<code>0x9F<\/code> pour des caractères supplémentaires (comme <code>€<\/code> ou <code>œ<\/code>)", "correct": true, "feedback": "Correct ! En Latin-1, la plage <code>0x80<\/code>–<code>0x9F<\/code> est réservée à des caractères de contrôle inutilisés, alors que Windows-1252 y place notamment <code>€<\/code> (<code>0x80<\/code>) et <code>œ<\/code> (<code>0x9C<\/code>)."}, {"text": "Il utilise 16 bits par caractère au lieu de 8 bits", "correct": false, "feedback": "Incorrect. Windows-1252 reste un encodage à taille fixe de 1 octet (8 bits) par caractère."}, {"text": "Il ne permet pas de coder les voyelles accentuées françaises", "correct": false, "feedback": "Incorrect. Il gère parfaitement les accents français (<code>é<\/code>, <code>à<\/code>, <code>ç<\/code>, <code>û<\/code>...), exactement comme Latin-1."}, {"text": "Il est rétrocompatible avec UTF-8 sur tous les caractères accentués", "correct": false, "feedback": "Incorrect. La rétrocompatibilité n'existe que sur la plage ASCII 7 bits (<code>0x00<\/code> à <code>0x7F<\/code>)."}], "hint": "Examinez l'utilisation des adresses hexadécimales situées entre <code>0x80<\/code> et <code>0x9F<\/code>."}, {"topic": "Gestion des erreurs de décodage", "question": "Que renvoie l'évaluation de <code>b'\\xe9'.decode('utf-8', errors='replace')<\/code> en Python ?", "options": [{"text": "Le caractère de remplacement Unicode <code>'\\ufffd'<\/code> (<code>�<\/code>)", "correct": true, "feedback": "Correct ! L'option <code>errors='replace'<\/code> remplace tout octet invalide en UTF-8 (comme <code>0xE9<\/code> isolé) par le symbole <code>�<\/code> sans interrompre le programme."}, {"text": "Une exception <code>UnicodeDecodeError<\/code>", "correct": false, "feedback": "Incorrect. Le paramètre <code>errors='replace'<\/code> empêche précisément la levée d'une exception."}, {"text": "Une chaîne vide <code>''<\/code>", "correct": false, "feedback": "Incorrect. Pour ignorer l'octet invalide et obtenir une chaîne vide, il faudrait utiliser <code>errors='ignore'<\/code>."}, {"text": "La lettre <code>'é'<\/code> correctement décodée", "correct": false, "feedback": "Incorrect. En UTF-8, <code>0xE9<\/code> seul n'est pas valide (en UTF-8, <code>'é'<\/code> s'écrit <code>b'\\xc3\\xa9'<\/code>)."}], "hint": "Le paramètre <code>errors<\/code> accepte notamment <code>'strict'<\/code>, <code>'ignore'<\/code> et <code>'replace'<\/code>."}];
+
+    let attemptCount = 1;
+    let currentIndex = 0;
+    let totalScore = 0;
+    let hintOpenedBeforeAnswer = false;
+    let firstClickDone = false;
+    let resultsHistory = [];
+
+    function formatFr(num) {
+      return Number.isInteger(num) ? String(num) : String(num).replace('.', ',');
+    }
+
+    function ptLabel(num) {
+      return formatFr(num) + (num > 1 ? ' points' : ' point');
+    }
+
+    function ptShort(num) {
+      return formatFr(num) + (num > 1 ? ' pts' : ' pt');
+    }
+
+    function shuffleArray(arr) {
+      const copy = arr.map(item => ({ ...item }));
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function initIntroTexts() {
+      const n = QUESTIONS.length;
+      document.getElementById('intro-title').textContent =
+        `Règles du quiz d'apprentissage (${n} questions — toutes les questions sont à 1 point)`;
+      document.getElementById('rule-hint-text').innerHTML =
+        `<strong>${ptLabel(POINTS_AVEC_INDICE)} (Jaune)</strong> : Bonne réponse dès le 1<sup>er</sup> essai après ouverture de l'indice.`;
+      document.getElementById('live-score-badge').textContent = `Score : 0 / ${n}`;
+    }
+
+    function updateLiveScore() {
+      document.getElementById('live-score-badge').textContent =
+        `Score : ${formatFr(totalScore)} / ${QUESTIONS.length}`;
+    }
+
+    function updateHintButtonText() {
+      const btn = document.getElementById('hint-btn');
+      if (firstClickDone) {
+        btn.textContent = "💡 Afficher l'indice (sans impact sur la note)";
+      } else if (POINTS_AVEC_INDICE < 1) {
+        btn.textContent = `💡 Afficher l'indice (plafonne la question à ${ptShort(POINTS_AVEC_INDICE)})`;
+      } else {
+        btn.textContent = "💡 Afficher l'indice";
+      }
+    }
+
+    function startQuiz() {
+      currentIndex = 0;
+      totalScore = 0;
+      resultsHistory = [];
+      document.getElementById('attempt-badge').textContent = `Tentative n°${attemptCount}`;
+      updateLiveScore();
+
+      document.getElementById('intro-screen').classList.add('hidden');
+      document.getElementById('summary-screen').classList.add('hidden');
+      document.getElementById('quiz-screen').classList.remove('hidden');
+      document.getElementById('progress-wrapper').classList.remove('hidden');
+      document.getElementById('live-score-badge').classList.remove('hidden');
+
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const q = QUESTIONS[currentIndex];
+      const total = QUESTIONS.length;
+      hintOpenedBeforeAnswer = false;
+      firstClickDone = false;
+
+      const pct = Math.round((currentIndex / total) * 100);
+      document.getElementById('progress-text').textContent = `Question ${currentIndex + 1} / ${total}`;
+      document.getElementById('progress-pct').textContent = `${pct} %`;
+      document.getElementById('progress-fill').style.width = `${pct}%`;
+
+      document.getElementById('q-topic').textContent = q.topic;
+      const stakeEl = document.getElementById('q-stake');
+      stakeEl.className = 'stake-pill';
+      stakeEl.textContent = 'En jeu : 1 pt';
+
+      document.getElementById('q-text').innerHTML = `${currentIndex + 1}. ${q.question}`;
+
+      const hintBox = document.getElementById('hint-box');
+      hintBox.classList.add('hidden');
+      hintBox.innerHTML = q.hint;
+      updateHintButtonText();
+
+      const nextBtn = document.getElementById('next-btn');
+      nextBtn.disabled = true;
+      nextBtn.textContent = (currentIndex === total - 1) ? 'Voir le bilan final →' : 'Question suivante →';
+
+      const container = document.getElementById('options-container');
+      container.innerHTML = '';
+      const letters = ['A', 'B', 'C', 'D'];
+      const shuffledOptions = shuffleArray(q.options);
+
+      shuffledOptions.forEach((opt, idx) => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'option-card';
+        card.innerHTML = `
+          <div class="option-header">
+            <span class="option-letter">${letters[idx]}</span>
+            <span>${opt.text}</span>
+          </div>
+          <div class="option-feedback">${opt.feedback}</div>
+        `;
+        card.addEventListener('click', () => handleOptionClick(card, opt, q));
+        container.appendChild(card);
+      });
+    }
+
+    function handleOptionClick(card, opt, q) {
+      card.classList.add('show-fb');
+      if (opt.correct) {
+        card.classList.add('revealed-correct');
+      } else {
+        card.classList.add('revealed-wrong');
+      }
+
+      if (!firstClickDone) {
+        firstClickDone = true;
+        let earned = 0;
+        let status = 'red';
+        let label = 'Erreur au 1er essai';
+
+        const stakeEl = document.getElementById('q-stake');
+        if (opt.correct) {
+          if (hintOpenedBeforeAnswer) {
+            earned = POINTS_AVEC_INDICE;
+            status = POINTS_AVEC_INDICE < 1 ? 'yellow' : 'green';
+            label = 'Réussi avec indice';
+            stakeEl.className = `stake-pill ${POINTS_AVEC_INDICE < 1 ? 'stake-warn' : 'stake-ok'}`;
+            stakeEl.textContent = `Obtenu : +${ptShort(earned)} (avec indice)`;
+          } else {
+            earned = 1;
+            status = 'green';
+            label = 'Réussi sans aide';
+            stakeEl.className = 'stake-pill stake-ok';
+            stakeEl.textContent = 'Obtenu : +1 pt';
+          }
+        } else {
+          earned = 0;
+          status = 'red';
+          label = 'Erreur au 1er essai';
+          stakeEl.className = 'stake-pill stake-ko';
+          stakeEl.textContent = 'Obtenu : 0 pt';
+        }
+
+        totalScore = Math.round((totalScore + earned) * 100) / 100;
+        updateLiveScore();
+        updateHintButtonText();
+
+        resultsHistory.push({
+          num: currentIndex + 1,
+          topic: q.topic,
+          status: status,
+          label: label,
+          earned: earned
+        });
+
+        document.getElementById('next-btn').disabled = false;
+      }
+    }
+
+    document.getElementById('hint-btn').addEventListener('click', () => {
+      const hintBox = document.getElementById('hint-box');
+      hintBox.classList.remove('hidden');
+      if (!firstClickDone && !hintOpenedBeforeAnswer) {
+        hintOpenedBeforeAnswer = true;
+        const stakeEl = document.getElementById('q-stake');
+        if (POINTS_AVEC_INDICE < 1) {
+          stakeEl.className = 'stake-pill stake-warn';
+          stakeEl.textContent = `En jeu : ${ptShort(POINTS_AVEC_INDICE)} (indice ouvert)`;
+        }
+      }
+    });
+
+    document.getElementById('next-btn').addEventListener('click', () => {
+      if (currentIndex < QUESTIONS.length - 1) {
+        currentIndex++;
+        renderQuestion();
+      } else {
+        showSummary();
+      }
+    });
+
+    function showSummary() {
+      const total = QUESTIONS.length;
+      document.getElementById('progress-text').textContent = `Terminé (${total} / ${total})`;
+      document.getElementById('progress-pct').textContent = '100 %';
+      document.getElementById('progress-fill').style.width = '100%';
+
+      document.getElementById('quiz-screen').classList.add('hidden');
+      document.getElementById('summary-screen').classList.remove('hidden');
+
+      document.getElementById('summary-title').textContent =
+        `Bilan de votre session (Tentative n°${attemptCount})`;
+
+      const note10 = Math.round((totalScore / total) * 10 * 100) / 100;
+      const note20 = Math.round((totalScore / total) * 20 * 100) / 100;
+      document.getElementById('score-10').textContent = `${formatFr(note10)} / 10`;
+      document.getElementById('score-20').textContent = `${formatFr(note20)} / 20`;
+
+      const toReview = resultsHistory.filter(r => r.status === 'red').map(r => r.topic);
+      const toConsolidate = resultsHistory.filter(r => r.status === 'yellow').map(r => r.topic);
+
+      const adviceBox = document.getElementById('advice-box');
+      let adviceHtml = '';
+      if (note10 >= 8) {
+        adviceBox.className = 'advice-box advice-green';
+        adviceHtml = `<h3>Excellent travail !</h3><p>Vous maîtrisez très solidement les encodages, Unicode, les octets et les fins de ligne.</p>`;
+      } else if (note10 >= 5) {
+        adviceBox.className = 'advice-box advice-yellow';
+        adviceHtml = `<h3>Bon début, continuez sur cette lancée !</h3><p>Les bases sont acquises. Profitez d'une nouvelle tentative pour décrocher les points complets sans indice.</p>`;
+      } else {
+        adviceBox.className = 'advice-box advice-red';
+        adviceHtml = `<h3>Ne vous découragez pas, c'est un quiz d'entraînement !</h3><p>Relisez les explications des questions ci-dessous puis retentez l'essai pour ancrer les automatismes.</p>`;
+      }
+
+      if (toReview.length > 0 || toConsolidate.length > 0) {
+        adviceHtml += '<ul>';
+        if (toReview.length > 0) {
+          adviceHtml += `<li><strong>Notions à revoir en priorité :</strong> ${[...new Set(toReview)].join(', ')}.</li>`;
+        }
+        if (toConsolidate.length > 0) {
+          adviceHtml += `<li><strong>Notions à consolider sans aide :</strong> ${[...new Set(toConsolidate)].join(', ')}.</li>`;
+        }
+        adviceHtml += '</ul>';
+      }
+      adviceBox.innerHTML = adviceHtml;
+
+      const tbody = document.getElementById('summary-tbody');
+      tbody.innerHTML = '';
+      resultsHistory.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = `row-${item.status}`;
+        tr.innerHTML = `
+          <td><strong>Q${item.num}</strong></td>
+          <td>${item.topic}</td>
+          <td>${item.label}</td>
+          <td><strong>${ptShort(item.earned)}</strong></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById('start-btn').addEventListener('click', startQuiz);
+    document.getElementById('retry-btn').addEventListener('click', () => {
+      attemptCount++;
+      startQuiz();
+    });
+
+    initIntroTexts();
+  </script>
+</body>
+</html>

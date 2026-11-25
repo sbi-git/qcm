@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Python : print, input, types et f-strings</title>
+<style>
+  :root {
+    --bg: #F1F5F9;
+    --card: #FFFFFF;
+    --navy: #1E3A8A;
+    --blue: #2563EB;
+    --blue-hover: #1D4ED8;
+    --text: #1E293B;
+    --muted: #64748B;
+    --border: #E2E8F0;
+    --green: #16A34A;
+    --green-bg: #F0FDF4;
+    --green-border: #86EFAC;
+    --amber: #D97706;
+    --amber-bg: #FFFBEB;
+    --amber-border: #FCD34D;
+    --red: #DC2626;
+    --red-bg: #FEF2F2;
+    --red-border: #FCA5A5;
+    --hint-bg: #FEF9C3;
+    --hint-border: #FDE047;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', 'Segoe UI', Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    padding: 24px 16px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .container {
+    width: 100%;
+    max-width: 820px;
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+  }
+  .header {
+    background: linear-gradient(135deg, var(--navy), var(--blue));
+    color: #FFFFFF;
+    padding: 22px 28px;
+  }
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .header h1 { font-size: 1.3rem; font-weight: 700; }
+  .badges { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .badge {
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .badge-score {
+    background: #FFFFFF;
+    color: var(--navy);
+    border: none;
+  }
+  .progress-wrap {
+    margin-top: 16px;
+  }
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    opacity: 0.95;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .progress-track {
+    width: 100%;
+    height: 9px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: #38BDF8;
+    border-radius: 999px;
+    transition: width 0.35s ease;
+  }
+  .body { padding: 28px; }
+  .hidden { display: none !important; }
+  code {
+    font-family: 'Fira Code', 'Consolas', monospace;
+    background: #F1F5F9;
+    color: #0F172A;
+    padding: 2px 6px;
+    border-radius: 5px;
+    font-size: 0.92em;
+    border: 1px solid #E2E8F0;
+  }
+
+  /* Écran d'accueil */
+  .intro-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 10px;
+  }
+  .intro-desc {
+    color: var(--text);
+    margin-bottom: 18px;
+    font-size: 0.98rem;
+  }
+  .rules-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .rule-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1.5px solid;
+    font-size: 0.95rem;
+  }
+  .rule-green { background: var(--green-bg); border-color: var(--green-border); color: #14532D; }
+  .rule-amber { background: var(--amber-bg); border-color: var(--amber-border); color: #78350F; }
+  .rule-red   { background: var(--red-bg);   border-color: var(--red-border);   color: #7F1D1D; }
+  .dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-green { background: var(--green); }
+  .dot-amber { background: var(--amber); }
+  .dot-red   { background: var(--red); }
+  .tip-box {
+    background: #EFF6FF;
+    border: 1.5px solid #BFDBFE;
+    color: #1E3A8A;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 0.93rem;
+    margin-bottom: 22px;
+  }
+
+  /* Zone Question */
+  .q-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .topic-tag {
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--blue);
+    background: #EFF6FF;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .stake-pill {
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: #F1F5F9;
+    color: var(--navy);
+    border: 1px solid #CBD5E1;
+  }
+  .stake-pill.amber { background: var(--amber-bg); color: #92400E; border-color: var(--amber-border); }
+  .stake-pill.green { background: var(--green-bg); color: #166534; border-color: var(--green-border); }
+  .stake-pill.red   { background: var(--red-bg);   color: #991B1B; border-color: var(--red-border); }
+
+  .q-text {
+    font-size: 1.08rem;
+    font-weight: 600;
+    margin-bottom: 18px;
+    line-height: 1.6;
+  }
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .option-item {
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: #FFFFFF;
+    transition: all 0.18s ease;
+    overflow: hidden;
+  }
+  .option-btn {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    padding: 13px 16px;
+    font-size: 0.98rem;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: inherit;
+  }
+  .option-item:hover { border-color: var(--blue); background: #F8FAFC; }
+  .opt-letter {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: #E2E8F0;
+    color: var(--navy);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+  }
+  .option-item.revealed-correct {
+    border-color: var(--green);
+    background: var(--green-bg);
+  }
+  .option-item.revealed-correct .opt-letter {
+    background: var(--green);
+    color: #FFFFFF;
+  }
+  .option-item.revealed-wrong {
+    border-color: var(--red);
+    background: var(--red-bg);
+  }
+  .option-item.revealed-wrong .opt-letter {
+    background: var(--red);
+    color: #FFFFFF;
+  }
+  .opt-feedback {
+    padding: 10px 16px 12px 56px;
+    font-size: 0.9rem;
+    border-top: 1px dashed rgba(0, 0, 0, 0.1);
+  }
+  .revealed-correct .opt-feedback { color: #14532D; }
+  .revealed-wrong .opt-feedback { color: #7F1D1D; }
+
+  /* Indice */
+  .hint-zone { margin-top: 8px; margin-bottom: 20px; }
+  .btn-hint {
+    background: var(--hint-bg);
+    border: 1.5px solid var(--hint-border);
+    color: #713F12;
+    padding: 9px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-hint:hover { background: #FEF08A; }
+  .hint-content {
+    margin-top: 8px;
+    background: var(--hint-bg);
+    border-left: 4px solid #EAB308;
+    padding: 11px 14px;
+    border-radius: 6px;
+    font-size: 0.93rem;
+    color: #422006;
+  }
+
+  /* Boutons principaux */
+  .actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--border);
+    padding-top: 18px;
+  }
+  .explore-note {
+    font-size: 0.86rem;
+    color: var(--muted);
+  }
+  .btn-primary {
+    background: var(--blue);
+    color: #FFFFFF;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-size: 0.98rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--blue-hover); }
+  .btn-primary:disabled {
+    background: #CBD5E1;
+    cursor: not-allowed;
+  }
+
+  /* Bilan final */
+  .score-banner {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .score-box {
+    background: #F8FAFC;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+  }
+  .score-box .val {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--navy);
+  }
+  .score-box .lbl {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .advice-box {
+    padding: 16px;
+    border-radius: 12px;
+    border: 1.5px solid;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+  }
+  .advice-green { background: var(--green-bg); border-color: var(--green-border); color: #14532D; }
+  .advice-amber { background: var(--amber-bg); border-color: var(--amber-border); color: #78350F; }
+  .advice-red   { background: var(--red-bg);   border-color: var(--red-border);   color: #7F1D1D; }
+  .advice-box ul { margin: 8px 0 0 20px; }
+
+  table.summary {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 22px;
+    font-size: 0.9rem;
+  }
+  table.summary th {
+    background: #F1F5F9;
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 2px solid #CBD5E1;
+    color: var(--navy);
+  }
+  table.summary td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  tr.row-green { background: var(--green-bg); color: #14532D; }
+  tr.row-amber { background: var(--amber-bg); color: #78350F; }
+  tr.row-red   { background: var(--red-bg);   color: #7F1D1D; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="header-top">
+      <h1>Python : print, input, types et f-strings</h1>
+      <div class="badges">
+        <span class="badge" id="attempt-badge">Tentative n°1</span>
+        <span class="badge badge-score hidden" id="live-score-badge">Score : 0 / 10</span>
+      </div>
+    </div>
+    <div class="progress-wrap hidden" id="progress-wrap">
+      <div class="progress-labels">
+        <span id="progress-text">Question 1 / 10</span>
+        <span id="progress-pct">0 %</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÉCRAN 1 : ACCUEIL & RÈGLES DU JEU -->
+  <div class="body" id="screen-intro">
+    <div class="intro-title" id="intro-title">Règles du quiz d'apprentissage (10 questions — toutes les questions sont à 1 point)</div>
+    <p class="intro-desc">
+      Testez vos connaissances pas à pas. Chaque question s'affiche l'une après l'autre et vous pouvez explorer toutes les explications après votre premier clic.
+    </p>
+
+    <div class="rules-list">
+      <div class="rule-card rule-green">
+        <span class="dot dot-green"></span>
+        <span><strong>1 point (Vert) :</strong> Bonne réponse dès le 1<sup>er</sup> essai sans ouvrir l'indice.</span>
+      </div>
+      <div class="rule-card rule-amber">
+        <span class="dot dot-amber"></span>
+        <span><strong id="rule-hint-pts">0,5 point (Jaune) :</strong> Bonne réponse dès le 1<sup>er</sup> essai après ouverture de l'indice.</span>
+      </div>
+      <div class="rule-card rule-red">
+        <span class="dot dot-red"></span>
+        <span><strong>0 point (Rouge) :</strong> Erreur au 1<sup>er</sup> essai sur la question.</span>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <strong>💡 Astuce :</strong> Seul votre premier clic compte pour la note. Une fois la question validée, n'hésitez pas à cliquer sur les autres propositions pour lire pourquoi elles étaient justes ou fausses ! Vous pourrez retenter le quiz à la fin.
+    </div>
+
+    <div style="text-align: right;">
+      <button class="btn-primary" id="btn-start">Commencer le quiz &rarr;</button>
+    </div>
+  </div>
+
+  <!-- ÉCRAN 2 : QUESTION PAS À PAS -->
+  <div class="body hidden" id="screen-quiz">
+    <div class="q-meta">
+      <span class="topic-tag" id="q-topic"></span>
+      <span class="stake-pill" id="q-stake">En jeu : 1 pt</span>
+    </div>
+    <div class="q-text" id="q-text"></div>
+    <div class="options" id="options-list"></div>
+
+    <div class="hint-zone">
+      <button class="btn-hint" id="btn-hint"></button>
+      <div class="hint-content hidden" id="hint-content"></div>
+    </div>
+
+    <div class="actions">
+      <span class="explore-note" id="explore-note">Sélectionnez une réponse pour valider la question.</span>
+      <button class="btn-primary" id="btn-next" disabled>Question suivante &rarr;</button>
+    </div>
+  </div>
+
+  <!-- ÉCRAN 3 : BILAN FINAL -->
+  <div class="body hidden" id="screen-summary">
+    <div class="score-banner">
+      <div class="score-box">
+        <div class="val" id="final-10">0 / 10</div>
+        <div class="lbl">Note sur 10</div>
+      </div>
+      <div class="score-box">
+        <div class="val" id="final-20">0 / 20</div>
+        <div class="lbl">Note sur 20</div>
+      </div>
+      <div class="score-box">
+        <div class="val" id="final-attempt">Essai n°1</div>
+        <div class="lbl">Tentative actuelle</div>
+      </div>
+    </div>
+
+    <div class="advice-box" id="advice-box"></div>
+
+    <table class="summary">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Notion évaluée</th>
+          <th>1<sup>er</sup> essai</th>
+          <th>Indice</th>
+          <th>Points</th>
+        </tr>
+      </thead>
+      <tbody id="summary-tbody"></tbody>
+    </table>
+
+    <div style="text-align: right;">
+      <button class="btn-primary" id="btn-retry">&#8635; Retenter le quiz</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =========================================================================
+// CONFIGURATION DU BARÈME (Modifiez uniquement cette valeur selon votre gré)
+// Valeur comprise entre 0 et 1 (ex: 1, 0.75, 0.5, 0.25, 0)
+// =========================================================================
+const POINTS_AVEC_INDICE = 0.7;
+
+const QUESTIONS = [{"topic": "Paramètres de print() : sep", "q": "Qu'affiche l'instruction Python suivante ?<br><code>print(\"192\", \"168\", \"1\", \"1\", sep=\".\")<\/code>", "hint": "Le paramètre <code>sep<\/code> définit le caractère inséré entre chaque argument passé à <code>print()<\/code>.", "options": [{"text": "<code>192.168.1.1<\/code>", "correct": true, "feedback": "Exact ! Le paramètre <code>sep=\".\"<\/code> remplace l'espace par défaut entre chaque argument par un point."}, {"text": "<code>192 168 1 1.<\/code>", "correct": false, "feedback": "Non, <code>sep<\/code> agit entre les arguments, pas à la fin de la ligne (c'est le rôle de <code>end<\/code>)."}, {"text": "<code>192,168,1,1<\/code>", "correct": false, "feedback": "Les virgules dans <code>print(...)<\/code> séparent les arguments en Python, elles ne s'affichent pas à l'écran."}, {"text": "Une erreur <code>TypeError<\/code>", "correct": false, "feedback": "La syntaxe est parfaitement valide : <code>print()<\/code> accepte plusieurs chaînes suivies de <code>sep<\/code>."}]}, {"topic": "Paramètres de print() : end", "q": "Que produisent ces deux instructions exécutées l'une après l'autre ?<br><code>print(\"Capteur\", end=\" : \")<br>print(\"OK\")<\/code>", "hint": "Par défaut, <code>end=\"\\n\"<\/code> provoque un retour à la ligne. Ici, il est remplacé par <code>\" : \"<\/code>.", "options": [{"text": "<code>Capteur : OK<\/code> (sur une seule ligne)", "correct": true, "feedback": "Exact ! Le premier <code>print()<\/code> termine par <code>\" : \"<\/code> au lieu d'un saut de ligne, donc <code>OK<\/code> s'affiche juste à la suite."}, {"text": "<code>Capteur<\/code> puis <code> : OK<\/code> à la ligne suivante", "correct": false, "feedback": "Il n'y a pas de retour à la ligne car <code>end=\" : \"<\/code> remplace le <code>\\n<\/code> par défaut."}, {"text": "<code>Capteur OK : <\/code>", "correct": false, "feedback": "Le contenu de <code>end<\/code> est affiché immédiatement à la fin du premier <code>print()<\/code>, avant le second."}, {"text": "<code>Capteur\\n : OK<\/code>", "correct": false, "feedback": "Le caractère <code>\\n<\/code> n'est pas conservé lorsque l'on redéfinit le paramètre <code>end<\/code>."}]}, {"topic": "Type retourné par input()", "q": "L'utilisateur saisit <code>42<\/code> au clavier lors de l'exécution de <code>n = input(\"Valeur : \")<\/code>. Quel est le type de <code>n<\/code> ?", "hint": "Quelle que soit la saisie de l'utilisateur (chiffres, lettres, symboles), <code>input()<\/code> renvoie toujours le même type.", "options": [{"text": "<code>&lt;class 'str'&gt;<\/code>", "correct": true, "feedback": "Exact ! La fonction <code>input()<\/code> retourne systématiquement une chaîne de caractères (<code>str<\/code>)."}, {"text": "<code>&lt;class 'int'&gt;<\/code>", "correct": false, "feedback": "Même si l'utilisateur tape des chiffres, Python ne les convertit pas automatiquement en entier sans <code>int()<\/code>."}, {"text": "<code>&lt;class 'float'&gt;<\/code>", "correct": false, "feedback": "Un flottant nécessite une conversion explicite avec <code>float()<\/code>."}, {"text": "<code>&lt;class 'bool'&gt;<\/code>", "correct": false, "feedback": "<code>input()<\/code> ne renvoie jamais de booléen."}]}, {"topic": "Erreur de type sans conversion", "q": "Que se passe-t-il si l'utilisateur saisit <code>10<\/code> dans ce programme ?<br><code>a = input(\"Nombre : \")<br>print(a + 5)<\/code>", "hint": "<code>a<\/code> est de type <code>str<\/code> et <code>5<\/code> est de type <code>int<\/code>. L'opérateur <code>+<\/code> ne peut pas les mélanger.", "options": [{"text": "Une erreur <code>TypeError<\/code> est levée", "correct": true, "feedback": "Exact ! On ne peut pas additionner une chaîne (<code>str<\/code>) et un entier (<code>int<\/code>) sans convertir <code>a<\/code> avec <code>int(a)<\/code>."}, {"text": "Le programme affiche <code>15<\/code>", "correct": false, "feedback": "Pour obtenir <code>15<\/code>, il faudrait écrire <code>int(a) + 5<\/code>."}, {"text": "Le programme affiche <code>105<\/code>", "correct": false, "feedback": "<code>105<\/code> s'afficherait uniquement si <code>5<\/code> était aussi une chaîne : <code>a + \"5\"<\/code>."}, {"text": "Une erreur <code>ValueError<\/code> est levée", "correct": false, "feedback": "<code>ValueError<\/code> survient lors d'une conversion impossible (ex. <code>int(\"abc\")<\/code>), pas lors d'une addition entre types incompatibles."}]}, {"topic": "Répétition de chaîne vs multiplication", "q": "L'utilisateur saisit <code>3<\/code> lors de l'exécution de ce code. Qu'affiche-t-il ?<br><code>x = input(\"Entrez un chiffre : \")<br>print(x * 4)<\/code>", "hint": "En Python, multiplier une chaîne de caractères par un entier <code>n<\/code> répète cette chaîne <code>n<\/code> fois.", "options": [{"text": "<code>3333<\/code>", "correct": true, "feedback": "Exact ! Comme <code>x<\/code> vaut la chaîne <code>\"3\"<\/code>, <code>\"3\" * 4<\/code> produit la répétition <code>\"3333\"<\/code>."}, {"text": "<code>12<\/code>", "correct": false, "feedback": "Pour effectuer un calcul mathématique et obtenir <code>12<\/code>, il faudrait convertir <code>x<\/code> avec <code>int(x)<\/code>."}, {"text": "Une erreur <code>TypeError<\/code>", "correct": false, "feedback": "Contrairement à <code>+<\/code>, l'opérateur <code>*<\/code> entre un <code>str<\/code> et un <code>int<\/code> est valide en Python : il répète la chaîne."}, {"text": "<code>3 3 3 3<\/code>", "correct": false, "feedback": "La répétition par <code>*<\/code> colle les caractères sans ajouter d'espace."}]}, {"topic": "Conversion int() sur un décimal", "q": "Que provoque l'instruction <code>int(\"12.5\")<\/code> en Python ?", "hint": "La fonction <code>int()<\/code> attend une chaîne représentant uniquement un nombre entier (sans point décimal).", "options": [{"text": "Une erreur <code>ValueError<\/code>", "correct": true, "feedback": "Exact ! Une chaîne contenant un point décimal ne peut pas être convertie directement en <code>int<\/code> ; il faut passer par <code>float(\"12.5\")<\/code>."}, {"text": "Elle renvoie l'entier <code>12<\/code>", "correct": false, "feedback": "<code>int(12.5)<\/code> (sur un nombre flottant) renvoie bien <code>12<\/code>, mais pas sur la chaîne <code>\"12.5\"<\/code>."}, {"text": "Elle renvoie l'entier <code>13<\/code>", "correct": false, "feedback": "<code>int()<\/code> n'arrondit jamais et échoue ici directement sur la chaîne <code>\"12.5\"<\/code>."}, {"text": "Elle renvoie le flottant <code>12.5<\/code>", "correct": false, "feedback": "C'est <code>float(\"12.5\")<\/code> qui renvoie <code>12.5<\/code>."}]}, {"topic": "Syntaxe des f-strings", "q": "On dispose de <code>port = 8080<\/code>. Quelle syntaxe affiche correctement <code>Port actif : 8080<\/code> ?", "hint": "Une f-string commence obligatoirement par la lettre <code>f<\/code> collée avant le guillemet ouvrant et place la variable entre accolades.", "options": [{"text": "<code>print(f\"Port actif : {port}\")<\/code>", "correct": true, "feedback": "Exact ! Le préfixe <code>f<\/code> indique à Python d'évaluer l'expression située entre accolades <code>{port}<\/code>."}, {"text": "<code>print(\"Port actif : {port}\")<\/code>", "correct": false, "feedback": "Sans le préfixe <code>f<\/code> devant les guillemets, Python affiche littéralement <code>Port actif : {port}<\/code>."}, {"text": "<code>print(f\"Port actif : [port]\")<\/code>", "correct": false, "feedback": "Les f-strings utilisent des accolades <code>{}<\/code>, pas des crochets <code>[]<\/code>."}, {"text": "<code>print(\"Port actif : \" + port)<\/code>", "correct": false, "feedback": "La concaténation <code>+<\/code> échoue avec un <code>TypeError<\/code> car <code>port<\/code> est un entier (<code>int<\/code>)."}]}, {"topic": "Formatage numérique dans une f-string", "q": "Avec <code>tension = 12.3456<\/code>, qu'affiche <code>print(f\"{tension:.2f} V\")<\/code> ?", "hint": "Le spécificateur <code>:.2f<\/code> formate un nombre flottant avec exactement 2 chiffres après la virgule.", "options": [{"text": "<code>12.35 V<\/code>", "correct": true, "feedback": "Exact ! <code>:.2f<\/code> arrondit et affiche le flottant avec 2 décimales (<code>12.3456<\/code> devient <code>12.35<\/code>)."}, {"text": "<code>12.34 V<\/code>", "correct": false, "feedback": "<code>:.2f<\/code> effectue un arrondi (et non une troncature) : le <code>5<\/code> après <code>34<\/code> arrondit à <code>12.35<\/code>."}, {"text": "<code>12.3456 V<\/code>", "correct": false, "feedback": "Toutes les décimales s'afficheraient uniquement si l'on écrivait <code>{tension}<\/code> sans <code>:.2f<\/code>."}, {"text": "<code>12 V<\/code>", "correct": false, "feedback": "Pour afficher 0 décimale, il faudrait écrire <code>:.0f<\/code>."}]}, {"topic": "Caractères d'échappement dans print()", "q": "Combien de lignes s'affichent à l'écran lors de l'exécution de <code>print(\"A\\nB\\tC\")<\/code> ?", "hint": "<code>\\n<\/code> représente un saut de ligne (Newline), tandis que <code>\\t<\/code> représente une tabulation horizontale.", "options": [{"text": "2 lignes", "correct": true, "feedback": "Exact ! <code>\\n<\/code> passe à la ligne entre <code>A<\/code> et <code>B<\/code>, tandis que <code>\\t<\/code> insère un espacement horizontal sur la même ligne entre <code>B<\/code> et <code>C<\/code>."}, {"text": "1 seule ligne", "correct": false, "feedback": "La séquence <code>\\n<\/code> provoque bien un retour à la ligne après <code>A<\/code>."}, {"text": "3 lignes", "correct": false, "feedback": "<code>\\t<\/code> est une tabulation horizontale, pas un saut de ligne."}, {"text": "2 lignes avec les symboles <code>\\n<\/code> et <code>\\t<\/code> visibles", "correct": false, "feedback": "<code>print()<\/code> interprète les séquences d'échappement (contrairement à <code>repr()<\/code>)."}]}, {"topic": "Inspection de type avec type()", "q": "Qu'affiche ce script ?<br><code>val = float(\"7\")<br>print(type(val))<\/code>", "hint": "<code>float(\"7\")<\/code> convertit la chaîne <code>\"7\"<\/code> en nombre à virgule flottante <code>7.0<\/code>.", "options": [{"text": "<code>&lt;class 'float'&gt;<\/code>", "correct": true, "feedback": "Exact ! La conversion <code>float(\"7\")<\/code> produit le flottant <code>7.0<\/code>, dont le type est <code>float<\/code>."}, {"text": "<code>&lt;class 'int'&gt;<\/code>", "correct": false, "feedback": "Même si <code>7<\/code> n'a pas de partie décimale non nulle, <code>float()<\/code> crée toujours un objet de type <code>float<\/code>."}, {"text": "<code>&lt;class 'str'&gt;<\/code>", "correct": false, "feedback": "<code>\"7\"<\/code> était un <code>str<\/code> avant conversion, mais <code>val<\/code> stocke le résultat de <code>float(...)<\/code>."}, {"text": "<code>7.0<\/code>", "correct": false, "feedback": "<code>print(val)<\/code> afficherait <code>7.0<\/code>, mais <code>print(type(val))<\/code> affiche sa classe."}]}];
+const LETTERS = ["A", "B", "C", "D"];
+
+let attempt = 1;
+let currentIdx = 0;
+let score = 0;
+let hintOpenedBeforeFirstClick = false;
+let hintVisible = false;
+let firstClickDone = false;
+let currentOptions = [];
+let results = [];
+
+function fmtPts(val) {
+  const rounded = Math.round(val * 100) / 100;
+  return rounded.toString().replace(".", ",");
+}
+
+function ptLabel(val) {
+  return fmtPts(val) + (val > 1 ? " points" : " point");
+}
+
+function shuffleArray(arr) {
+  const copy = arr.map(item => Object.assign({}, item));
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = copy[i];
+    copy[i] = copy[j];
+    copy[j] = tmp;
+  }
+  return copy;
+}
+
+function initIntro() {
+  const n = QUESTIONS.length;
+  document.getElementById("intro-title").textContent =
+    "Règles du quiz d'apprentissage (" + n + " questions — toutes les questions sont à 1 point)";
+  document.getElementById("rule-hint-pts").textContent =
+    ptLabel(POINTS_AVEC_INDICE) + " (Jaune) :";
+  document.getElementById("live-score-badge").textContent = "Score : 0 / " + n;
+}
+
+function startQuiz() {
+  currentIdx = 0;
+  score = 0;
+  results = [];
+  document.getElementById("attempt-badge").textContent = "Tentative n°" + attempt;
+  document.getElementById("live-score-badge").classList.remove("hidden");
+  document.getElementById("live-score-badge").textContent = "Score : 0 / " + QUESTIONS.length;
+  document.getElementById("progress-wrap").classList.remove("hidden");
+  document.getElementById("screen-intro").classList.add("hidden");
+  document.getElementById("screen-summary").classList.add("hidden");
+  document.getElementById("screen-quiz").classList.remove("hidden");
+  renderQuestion();
+}
+
+function updateHintButtonLabel() {
+  const btn = document.getElementById("btn-hint");
+  if (hintVisible) {
+    btn.textContent = "Masquer l'indice";
+  } else if (firstClickDone || hintOpenedBeforeFirstClick) {
+    btn.textContent = "💡 Afficher l'indice";
+  } else if (POINTS_AVEC_INDICE === 1) {
+    btn.textContent = "💡 Afficher l'indice (sans pénalité)";
+  } else {
+    btn.textContent = "💡 Afficher l'indice (plafonne la question à " + fmtPts(POINTS_AVEC_INDICE) + " pt)";
+  }
+}
+
+function renderQuestion() {
+  const total = QUESTIONS.length;
+  const qObj = QUESTIONS[currentIdx];
+  hintOpenedBeforeFirstClick = false;
+  hintVisible = false;
+  firstClickDone = false;
+  currentOptions = shuffleArray(qObj.options);
+
+  const pct = Math.round((currentIdx / total) * 100);
+  document.getElementById("progress-text").textContent = "Question " + (currentIdx + 1) + " / " + total;
+  document.getElementById("progress-pct").textContent = pct + " %";
+  document.getElementById("progress-fill").style.width = pct + "%";
+
+  document.getElementById("q-topic").textContent = qObj.topic;
+  const stake = document.getElementById("q-stake");
+  stake.className = "stake-pill";
+  stake.textContent = "En jeu : 1 pt";
+
+  document.getElementById("q-text").innerHTML = qObj.q;
+
+  const list = document.getElementById("options-list");
+  list.innerHTML = "";
+  currentOptions.forEach((opt, idx) => {
+    const item = document.createElement("div");
+    item.className = "option-item";
+    item.id = "opt-item-" + idx;
+
+    const btn = document.createElement("button");
+    btn.className = "option-btn";
+    btn.type = "button";
+    btn.innerHTML = "<span class='opt-letter'>" + LETTERS[idx] + "</span><span>" + opt.text + "</span>";
+    btn.addEventListener("click", () => handleOptionClick(idx));
+
+    const fb = document.createElement("div");
+    fb.className = "opt-feedback hidden";
+    fb.id = "opt-fb-" + idx;
+    fb.innerHTML = (opt.correct ? "<strong>&#10003; Bonne réponse :</strong> " : "<strong>&#10007; Incorrect :</strong> ") + opt.feedback;
+
+    item.appendChild(btn);
+    item.appendChild(fb);
+    list.appendChild(item);
+  });
+
+  const hintContent = document.getElementById("hint-content");
+  hintContent.classList.add("hidden");
+  hintContent.innerHTML = qObj.hint;
+  updateHintButtonLabel();
+
+  const btnNext = document.getElementById("btn-next");
+  btnNext.disabled = true;
+  btnNext.innerHTML = (currentIdx === total - 1) ? "Voir le bilan final &rarr;" : "Question suivante &rarr;";
+  document.getElementById("explore-note").textContent = "Sélectionnez une réponse pour valider la question.";
+}
+
+function handleOptionClick(idx) {
+  const opt = currentOptions[idx];
+  const item = document.getElementById("opt-item-" + idx);
+  const fb = document.getElementById("opt-fb-" + idx);
+
+  item.classList.add(opt.correct ? "revealed-correct" : "revealed-wrong");
+  fb.classList.remove("hidden");
+
+  if (!firstClickDone) {
+    firstClickDone = true;
+    let earned = 0;
+    let status = "red";
+    const stake = document.getElementById("q-stake");
+
+    if (opt.correct) {
+      if (hintOpenedBeforeFirstClick) {
+        earned = POINTS_AVEC_INDICE;
+        status = (POINTS_AVEC_INDICE < 1) ? "amber" : "green";
+        stake.className = "stake-pill " + status;
+        stake.textContent = "Obtenu : +" + fmtPts(earned) + " pt (avec indice)";
+      } else {
+        earned = 1;
+        status = "green";
+        stake.className = "stake-pill green";
+        stake.textContent = "Obtenu : +1 pt";
+      }
+    } else {
+      earned = 0;
+      status = "red";
+      stake.className = "stake-pill red";
+      stake.textContent = "Obtenu : 0 pt";
+    }
+
+    score = Math.round((score + earned) * 100) / 100;
+    document.getElementById("live-score-badge").textContent = "Score : " + fmtPts(score) + " / " + QUESTIONS.length;
+
+    results.push({
+      num: currentIdx + 1,
+      topic: QUESTIONS[currentIdx].topic,
+      correctFirst: opt.correct,
+      usedHint: hintOpenedBeforeFirstClick,
+      earned: earned,
+      status: status
+    });
+
+    updateHintButtonLabel();
+    document.getElementById("btn-next").disabled = false;
+    document.getElementById("explore-note").textContent =
+      "Question validée ! Vous pouvez cliquer sur les autres propositions pour lire leurs explications.";
+  }
+}
+
+document.getElementById("btn-hint").addEventListener("click", () => {
+  hintVisible = !hintVisible;
+  const hintContent = document.getElementById("hint-content");
+  if (hintVisible) {
+    hintContent.classList.remove("hidden");
+    if (!firstClickDone) {
+      hintOpenedBeforeFirstClick = true;
+      const stake = document.getElementById("q-stake");
+      if (POINTS_AVEC_INDICE < 1) {
+        stake.className = "stake-pill amber";
+        stake.textContent = "En jeu : " + fmtPts(POINTS_AVEC_INDICE) + " pt (indice ouvert)";
+      }
+    }
+  } else {
+    hintContent.classList.add("hidden");
+  }
+  updateHintButtonLabel();
+});
+
+document.getElementById("btn-next").addEventListener("click", () => {
+  if (currentIdx < QUESTIONS.length - 1) {
+    currentIdx++;
+    renderQuestion();
+  } else {
+    showSummary();
+  }
+});
+
+function showSummary() {
+  const total = QUESTIONS.length;
+  document.getElementById("progress-text").textContent = "Terminé (" + total + " / " + total + ")";
+  document.getElementById("progress-pct").textContent = "100 %";
+  document.getElementById("progress-fill").style.width = "100%";
+
+  document.getElementById("screen-quiz").classList.add("hidden");
+  document.getElementById("screen-summary").classList.remove("hidden");
+
+  const score20 = Math.round((score / total) * 20 * 10) / 10;
+  document.getElementById("final-10").textContent = fmtPts(score) + " / " + total;
+  document.getElementById("final-20").textContent = fmtPts(score20) + " / 20";
+  document.getElementById("final-attempt").textContent = "Essai n°" + attempt;
+
+  const failedTopics = results.filter(r => r.status === "red").map(r => r.topic);
+  const hintTopics = results.filter(r => r.status === "amber").map(r => r.topic);
+
+  const advice = document.getElementById("advice-box");
+  let html = "";
+  if (score20 >= 16) {
+    advice.className = "advice-box advice-green";
+    html = "<strong>Excellent travail !</strong> Vous maîtrisez très bien <code>print()</code>, <code>input()</code>, les conversions de types et les f-strings.";
+  } else if (score20 >= 10) {
+    advice.className = "advice-box advice-amber";
+    html = "<strong>Bon ensemble, continuez sur cette lancée !</strong> Vous avez acquis les bases essentielles ; un second essai sans indice vous permettra de consolider vos réflexes.";
+  } else {
+    advice.className = "advice-box advice-red";
+    html = "<strong>Ne vous découragez pas, c'est un quiz d'entraînement !</strong> Relisez les explications des questions en rouge puis cliquez sur <em>Retenter le quiz</em> pour progresser immédiatement.";
+  }
+
+  if (failedTopics.length > 0) {
+    html += "<br><br><strong>Notions à revoir en priorité :</strong><ul>" +
+      failedTopics.map(t => "<li>" + t + "</li>").join("") + "</ul>";
+  }
+  if (hintTopics.length > 0) {
+    html += "<br><strong>Notions réussies avec indice (à consolider sans aide) :</strong><ul>" +
+      hintTopics.map(t => "<li>" + t + "</li>").join("") + "</ul>";
+  }
+  advice.innerHTML = html;
+
+  const tbody = document.getElementById("summary-tbody");
+  tbody.innerHTML = "";
+  results.forEach(r => {
+    const tr = document.createElement("tr");
+    tr.className = "row-" + r.status;
+    tr.innerHTML =
+      "<td><strong>Q" + r.num + "</strong></td>" +
+      "<td>" + r.topic + "</td>" +
+      "<td>" + (r.correctFirst ? "&#10003; Juste" : "&#10007; Erreur") + "</td>" +
+      "<td>" + (r.usedHint ? "Ouvert" : "Non") + "</td>" +
+      "<td><strong>" + fmtPts(r.earned) + " pt</strong></td>";
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById("btn-start").addEventListener("click", startQuiz);
+document.getElementById("btn-retry").addEventListener("click", () => {
+  attempt++;
+  startQuiz();
+});
+
+initIntro();
+</script>
+</body>
+</html>
